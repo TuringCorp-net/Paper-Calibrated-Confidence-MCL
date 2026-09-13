@@ -79,20 +79,25 @@ vs 65.4\%), while its confidence is monotone in outcome accuracy across four ban
 (JudgeBench 99.6\% / 94.0\% / 84.1\% / 67.7\%; CJB 83.3\% / 76.4\% / 63.6\% / 55.4\%).
 Applying a threshold turns this into selective judgment: on JudgeBench, gating at
 80\% confidence retains 76.1\% of judgments at 97.4\% accuracy, and at 90\% retains
-46.1\% at 99.6\%. On the rubric benchmark, the collaborative system scores 63.3
+46.1\% at 99.6\%. Asked for its own confidence under the same protocol and guidance, the
+single model spends that confidence differently: it makes 51.8\% of its CJB judgments at
+$\geq$ 90\% confidence and is wrong on 428 of them --- about one in five --- while the gap
+between its mean confidence when right and when wrong is 3.8 points, against 6.5 for the
+collaborative judge. On the rubric benchmark, the collaborative system scores 63.3
 against 57.4 for DeepSeek V4 Flash called directly and 55.6 for the official o3 draft on the
 same 38 tasks under one judging pipeline; in a rubric-blind side-by-side comparison the
-collaborative draft was selected in 36 of 38 tasks, and exchanging the two candidates
-between the option positions kept the same pick in 10 of 10 cases.
+collaborative draft was selected in 36 of 38 tasks, and on all 37 tasks where the judge had
+made a pick, exchanging the two candidates between the option positions left 36 unchanged
+--- the single change falling on a task the judge had itself flagged as a near-tie.
 
 The paper's central negative result is that the usefulness of the confidence signal is
 conditional on how verifiable the underlying judgment is. On CJB splits where the
 correct judgment is checkable, gating at 70\% confidence retains 93.6\% of decisions at
 83.0\% accuracy; on splits whose two candidates are deliberately near-tied, the same
 threshold retains 79.8\% at 62.6\% and the separation between correct and incorrect
-decisions nearly vanishes. We report calibration, order-invariance and instrument
-comparisons together with the comparisons in which the collaborative system does not
-come out ahead.
+decisions nearly vanishes. We report calibration, order-invariance, the single-model
+comparison and instrument effects together with the comparisons in which the
+collaborative system does not come out ahead.
 
 \subsection{Keywords}\label{keywords}
 
@@ -126,6 +131,7 @@ comparison can be re-run with the candidates exchanged.
 \begin{table}[h]
 \centering
 \small
+\caption{Hypotheses and their status in this paper.}\label{tab:hypotheses}
 \begin{tabular}{@{}p{0.06\linewidth}p{0.52\linewidth}p{0.34\linewidth}@{}}
 \toprule
 & \textbf{Hypothesis} & \textbf{Status in this draft} \\
@@ -155,6 +161,10 @@ H6 & On questions without an answer key, preference-based judgment separates sys
   A boundary result: the signal is informative where the judgment is verifiable and
   degrades toward no information where the candidates are near-tied.
 \item
+  A paired comparison against a single model's self-reported confidence on the same
+  items under the same guidance, showing that the confidence axis --- not the pick rate
+  --- is where the two systems differ.
+\item
   An order-invariance control for the collaborative decision, contrasted with the
   order sensitivity of a single model used as a judge.
 \item
@@ -181,35 +191,53 @@ kept apart.
 
 \subsubsection{2.1 Multi-model collaboration and ensembling}\label{ensembles}
 
-Ensembling and multi-agent debate improve accuracy on reasoning benchmarks, and the
-mechanism is usually attributed to diversity among the members. Most of this literature
-reports accuracy. This paper asks a complementary question about the same machinery:
-what does the collaboration know about its own decisions, and can that knowledge be
-turned into a gate.
+Combining independent samples or independent models is an old idea with a well-documented
+record. Self-consistency over sampled reasoning paths raises accuracy on arithmetic and
+commonsense benchmarks \cite{wang2022selfconsistency}, and multi-agent debate --- several
+model instances criticising and revising one another --- improves factuality and reasoning
+\cite{du2023debate}. In both cases the reported object is accuracy, and diversity among
+the members is the usual explanation for any gain. This paper asks a question that
+literature does not answer about the same machinery: what does the collaboration know
+about its own decisions, and can that knowledge be turned into a gate?
 
 \subsubsection{2.2 Confidence calibration}\label{calibration}
 
-Calibration work generally measures whether a model's stated probability matches its
-empirical accuracy, and treats overconfidence as a property of the model to be
-corrected post hoc. We study a confidence that is produced by a comparison between
-externally generated candidates rather than by introspection, and we measure it on the
-same items for which accuracy is measured, so that the two axes can be read together.
+Calibration research measures whether a stated probability matches empirical accuracy, and
+treats overconfidence as a property of a model to be corrected after the fact
+\cite{guo2017calibration}. The confidence studied here is not the probability of a token
+or of an answer; it is produced by a comparison between externally generated candidates,
+and we measure it on the same items and against the same outcomes as accuracy, so that the
+two axes can be read together. The closest precedent in spirit is the finding that model
+evaluators recognise and favour their own generations \cite{panickssery2024selfpreference},
+which motivates both the panel construction studied here and the self-preference control
+we run in Section~8.
 
 \subsubsection{2.3 Selective prediction}\label{selective}
 
 Selective prediction trades coverage for accuracy using a confidence score, and is
-evaluated with risk--coverage curves. We adopt this framing because it states the
-practical value of a confidence signal in the units a user cares about, and because it
-makes the negative case explicit: when the curve is flat, the signal carries no
-information for that task family.
+evaluated with risk--coverage curves \cite{geifman2017selective}. We adopt this framing
+because it states the practical value of a confidence signal in the units a user cares
+about, and because it makes the negative case explicit: when the curve is flat, the signal
+carries no information for that task family. Reporting a flat curve as a result, rather
+than hiding it behind an aggregate, is a deliberate choice of this paper.
 
 \subsubsection{2.4 Models as judges}\label{llm-judge}
 
-Using a model to judge outputs is now standard practice, and its known failure modes
-include position bias and self-preference. Both matter directly here: the paper
-measures the collaborative decision's sensitivity to position, and it compares
-preference judgments produced by different instruments, including a single-model judge
-that shares provenance with one of the candidates.
+Using a model to judge outputs is now standard practice \cite{zheng2023judging}, and its
+failure modes are documented: position bias, verbosity bias and self-preference. Two of
+them matter directly here. We measure the collaborative decision's sensitivity to position,
+and we compare preference judgments produced by different instruments, including a
+single-model judge that shares provenance with one of the candidates.
+
+\subsubsection{2.5 The benchmarks used}\label{benchmarks-related}
+
+The three benchmark families used in this paper are third-party and public. ProfBench
+provides expert-level tasks from physics, chemistry, finance and consulting, each scored
+criterion by criterion against an official rubric \cite{nvidia2026profbench}. JudgeBench
+evaluates a judge on pairs whose correct answer is objectively determinable
+\cite{judgebench2024}. ContextualJudgeBench evaluates judges in contextual settings, with
+splits deliberately constructed to be near-tied \cite{cjb2025}. Their official protocols
+are followed verbatim; the paper links to them rather than redistributing their contents.
 
 \subsection{3 The MCL Framework Under Study}\label{framework}
 
@@ -244,6 +272,7 @@ externally observable behaviour.
 \begin{table}[h]
 \centering
 \small
+\caption{Benchmarks used, all third-party and public.}\label{tab:benchmarks}
 \begin{tabular}{@{}llrl@{}}
 \toprule
 \textbf{Benchmark} & \textbf{What it measures} & \textbf{Size} & \textbf{Source} \\
@@ -306,6 +335,7 @@ limitation rather than assuming it away.
 \begin{table}[h]
 \centering
 \small
+\caption{Confidence bands against observed accuracy, per benchmark.}\label{tab:bands}
 \begin{tabular}{@{}lrrrr@{}}
 \toprule
 \textbf{Confidence band} & \multicolumn{2}{c}{\textbf{JudgeBench}} & \multicolumn{2}{c}{\textbf{CJB}} \\
@@ -342,12 +372,13 @@ together with a short reference scale describing how to read that value. The sam
 guidance is used by the collaborative judge, so both systems are asked for the same kind
 of self-assessment and any difference in the resulting confidence is not attributable to
 the instructions. We describe that guidance rather than reproduce it. The four bands of
-Section~5.1 are derived from observed results after the runs; they are our cut of a
+Section~5.1 (Table~\ref{tab:bands}) are derived from observed results after the runs; they are our cut of a
 continuous value, not a vocabulary handed to either system.
 
 \begin{table}[h]
 \centering
 \small
+\caption{Self-reported confidence of a single model against the collaborative judge, on the same items.}\label{tab:single}
 \begin{tabular}{@{}lrr@{}}
 \toprule
  & \textbf{DeepSeek V4 Flash} & \textbf{Collaborative judge} \\
@@ -394,13 +425,14 @@ gate cannot be assumed to come with it.
 
 \subsubsection{6.1 Risk--coverage}\label{risk-coverage}
 
-Gating a decision on its confidence converts calibration into a policy. Table~3 reports
+Gating a decision on its confidence converts calibration into a policy. Table~\ref{tab:rc} reports
 the accuracy retained at three thresholds and the share of decisions each threshold
 keeps.
 
 \begin{table}[h]
 \centering
 \small
+\caption{Selective judgment: coverage and accuracy at three confidence thresholds.}\label{tab:rc}
 \begin{tabular}{@{}lrrr@{}}
 \toprule
 \textbf{Data} & \textbf{no gate} & \textbf{$\geq$ 70\%} & \textbf{$\geq$ 80\%} & \textbf{$\geq$ 90\%} \\
@@ -419,13 +451,22 @@ points, and pushing to 90\% leaves almost nothing to act on. Both are useful ans
 the second says the two candidates really are close, which is a decision the user can
 make on other grounds.
 
-\subsubsection{6.2 Reading the gate as a product claim}\label{gate-product}
+\subsubsection{6.2 The same gate on a single model's confidence}\label{gate-single}
 
-The operational statement of this section is deliberately narrow: a confidence value is
-worth shipping when the curve it produces is not flat, and the curve must be measured
-per task family rather than advertised once. \emph{[Section to be extended once the
-single-model comparison of 5.3 is available, so that the two curves can be shown
-together.]}
+The comparison of Section~5.3 makes the practical question concrete: does the single
+model's confidence produce a better gate at equal accuracy? It does not. On JudgeBench the
+single model puts 85.6\% of its judgments above 90\% confidence, so that threshold retains
+almost everything and the curve barely moves; on CJB the same threshold retains 51.9\% of
+orders at 79.4\% accuracy, against the collaborative judge's 19.8\% at 83.3\%. In other
+words, the single model asks to be trusted more often and delivers less when it is --- and
+because its lower bands do not order correctly, lowering the threshold does not recover a
+usable middle regime.
+
+The operational statement of this section is therefore narrow on purpose. A confidence
+value is worth shipping when the curve it produces is not flat, and the curve has to be
+measured per task family rather than advertised once. A specificity claim follows from the
+same data: at equal accuracy, a gate is only as good as the band structure behind it, and
+that structure is measured here rather than assumed.
 
 \subsection{7 RQ3: Where the Signal Holds and Where It Does Not}\label{rq3}
 
@@ -536,15 +577,22 @@ the instruments disagree in a structured way.}
 \subsection{10 Conclusion}\label{conclusion}
 
 A collaborative system's most useful output may not be a better answer but a calibrated
-statement about how much the answer should be trusted. On two public judgment
-benchmarks the collaborative judge's accuracy ties with DeepSeek V4 Flash called directly while
-its confidence is monotone in outcome accuracy and supports a quantified
-risk--coverage trade-off; on an expert rubric benchmark the collaborative generator
-leads by a few points under rubric scoring and is preferred almost unanimously under a
-rubric-blind comparison. The same data show the limit of the claim: where the two
-candidates are genuinely close, the confidence signal stops separating right from
-wrong, and the honest reading of a low value is not \emph{the system failed} but
-\emph{the choice belongs to criteria outside the answers}.
+statement about how much the answer should be trusted. On two public judgment benchmarks
+the collaborative judge's accuracy ties with DeepSeek V4 Flash called directly, while its
+confidence is monotone in outcome accuracy and supports a quantified risk--coverage
+trade-off; asked for its own confidence under the same protocol, the single model issues
+top-band confidence on half of the near-tied comparisons and is wrong on roughly one in
+five of them, with a right-versus-wrong separation less than two thirds of the
+collaborative judge's. On an expert rubric benchmark the collaborative generator leads by
+a few points under rubric scoring and is preferred almost unanimously under a rubric-blind
+comparison, and the full position-swap audit keeps that preference stable wherever the
+judge was confident.
+
+The same data show the limits of the claim. Where the two candidates are genuinely close,
+the confidence signal stops separating right from wrong, and the honest reading of a low
+value is not \emph{the system failed} but \emph{the choice belongs to criteria outside the
+answers}. The gate is useful exactly where a comparison can be settled by inspection, and
+that is a property of the task family, measured per family rather than assumed.
 
 \subsection{Appendix A: Data Availability}\label{data-availability}
 
@@ -566,22 +614,30 @@ benchmarks are third-party and are referenced rather than redistributed:
 Raw per-call logs, provider billing records and internal configuration are not
 published.
 
-\begin{thebibliography}{9}
+\begin{thebibliography}{99}
 \tightlist
-\item
-  NVIDIA. \emph{ProfBench: Multi-Domain Rubrics requiring Professional Knowledge to
-  Answer and Judge.} arXiv:2510.18941, 2026.
-\item
-  Salesforce. \emph{ContextualJudgeBench.} 2026.
-\item
-  JudgeBench. \emph{Judging between candidate answers across knowledge, reasoning,
-  mathematics and code items.} 2026.
-\item
-  Zhang, L. \emph{MCL conceptual framework.} Preprint, 2026.
-  \url{https://doi.org/10.6084/m9.figshare.30645869}
-\item
-  Zhang, L. \emph{MCL-Team: minimal multi-model collaboration.} Preprint, 2026.
-  \url{https://doi.org/10.6084/m9.figshare.32824352}
+\bibitem{wang2022selfconsistency}
+  Wang, X. et al. \emph{Self-Consistency Improves Chain of Thought Reasoning in Language Models.} ICLR 2023. arXiv:2203.11171.
+\bibitem{du2023debate}
+  Du, Y. et al. \emph{Improving Factuality and Reasoning in Language Models through Multiagent Debate.} ICML 2024. arXiv:2305.14325.
+\bibitem{guo2017calibration}
+  Guo, C. et al. \emph{On Calibration of Modern Neural Networks.} ICML 2017. arXiv:1706.04599.
+\bibitem{geifman2017selective}
+  Geifman, Y. and El-Yaniv, R. \emph{Selective Classification for Deep Neural Networks.} NeurIPS 2017. arXiv:1705.08500.
+\bibitem{zheng2023judging}
+  Zheng, L. et al. \emph{Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena.} NeurIPS 2023. arXiv:2306.05685.
+\bibitem{panickssery2024selfpreference}
+  Panickssery, A. et al. \emph{LLM Evaluators Recognize and Favor Their Own Generations.} NeurIPS 2024. arXiv:2404.13076.
+\bibitem{nvidia2026profbench}
+  NVIDIA. \emph{ProfBench: Multi-Domain Rubrics requiring Professional Knowledge to Answer and Judge.} arXiv:2510.18941, 2026. \url{https://huggingface.co/datasets/nvidia/ProfBench}
+\bibitem{judgebench2024}
+  \emph{JudgeBench: A Benchmark for Evaluating LLM-Based Judges.} arXiv:2410.12784, 2024.
+\bibitem{cjb2025}
+  \emph{Does Context Matter? ContextualJudgeBench for Evaluating LLM-based Judges in Contextual Settings.} ACL 2025. arXiv:2503.15620.
+\bibitem{zhang2026mcl}
+  Zhang, L. \emph{MCL conceptual framework.} Preprint, 2026. \url{https://doi.org/10.6084/m9.figshare.30645869}
+\bibitem{zhang2026mclteam}
+  Zhang, L. \emph{MCL-Team: minimal multi-model collaboration.} Preprint, 2026. \url{https://doi.org/10.6084/m9.figshare.32824352}
 \end{thebibliography}
 
 \end{document}

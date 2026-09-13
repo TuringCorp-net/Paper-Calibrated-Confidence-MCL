@@ -1,0 +1,24 @@
+# LaTeX build artefacts
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.bbl
+*.blg
+
+# Raw operational data must never be committed to this public repository.
+# Aggregate tables under data/ are the only data that belongs here.
+raw/
+*.jsonl
+*.parquet
+*.zip
+
+# Editor and OS noise
+.DS_Store
+.idea/
+.vscode/
+__pycache__/
+*.pyc

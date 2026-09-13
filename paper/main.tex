@@ -1,0 +1,519 @@
+% Cross-Model Confidence in the MCL Framework
+% Framework draft v0.1 -- 2026-09-13
+% Compile with pdfLaTeX.
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{-\maxdimen} % section numbers are written manually in the headings
+\usepackage{iftex}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{textcomp}
+\usepackage{lmodern}
+
+\pdfoutput=1
+
+\usepackage[hidelinks]{hyperref}
+\hypersetup{
+  pdfauthor   = {Li Zhang},
+  pdftitle    = {Cross-Model Confidence in the MCL Framework: Calibrated Uncertainty for Selective Judgment},
+  pdfsubject  = {Preprint},
+  pdfkeywords = {multi-model collaboration; confidence calibration; selective prediction; uncertainty; LLM-as-judge; Meta-Coordination Layer}
+}
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setlength{\emergencystretch}{3em}
+\usepackage[margin=1in]{geometry}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{microtype}
+
+\begin{document}
+\section{Cross-Model Confidence in the MCL Framework: Calibrated Uncertainty for Selective Judgment}\label{title}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Title \& Author Information}\label{title-author-information}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Title}: Cross-Model Confidence in the MCL Framework: Calibrated Uncertainty for Selective Judgment
+\item
+  \textbf{Author}: Li Zhang
+\item
+  \textbf{Affiliation}: TuringCorp
+\item
+  \textbf{Version}: framework draft v0.1 (2026-09-13)
+\end{itemize}
+
+\begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
+
+\subsection{Abstract}\label{abstract}
+
+A single model answers a question and, if asked, reports a confidence about its own
+answer. That signal is introspective: nothing outside the model checks it, and a model
+that is wrong can be wrong with high stated confidence. This paper studies an
+alternative produced by the Meta-Coordination Layer (MCL) framework, in which several
+heterogeneous models generate and cross-examine independently and an arbitration step
+selects among the resulting candidates, emitting a confidence value with every
+decision.
+
+We evaluate the framework through its two deployed instantiations --- a collaborative
+generator and a collaborative judge --- on three benchmark families: two public
+judgment benchmarks (JudgeBench, 614 scored judgments; ContextualJudgeBench, the full
+official 8-split set, 1,991 scored pairs / 3,988 response orders) and an expert-level,
+multi-domain rubric benchmark (ProfBench, 38 scored tasks). We ask whether cross-model
+confidence is calibrated against outcomes; how much accuracy a confidence threshold
+buys at what coverage; where the signal degrades; whether the decision is invariant to
+presentation order, unlike a single model used as a judge; and whether
+preference-based judgment separates systems differently from rubric scoring.
+
+On the public judgment benchmarks the collaborative judge's raw accuracy ties with a
+single-model baseline of the same generation (JudgeBench 92.5\% vs 92.7\%; CJB 67.1\%
+vs 65.4\%), while its confidence is monotone in outcome accuracy across four bands
+(JudgeBench 99.6\% / 94.0\% / 84.1\% / 67.7\%; CJB 83.3\% / 76.4\% / 63.6\% / 55.4\%).
+Applying a threshold turns this into selective judgment: on JudgeBench, gating at
+80\% confidence retains 76.1\% of judgments at 97.4\% accuracy, and at 90\% retains
+46.1\% at 99.6\%. On the rubric benchmark, the collaborative system scores 63.3
+against 57.4 for the direct baseline and 55.6 for the official reference draft on the
+same 38 tasks under one judging pipeline; in a rubric-blind side-by-side comparison the
+collaborative draft was selected in 36 of 38 tasks, and exchanging the two candidates
+between the option positions kept the same pick in 10 of 10 cases.
+
+The paper's central negative result is that the usefulness of the confidence signal is
+conditional on how verifiable the underlying judgment is. On CJB splits where the
+correct judgment is checkable, gating at 70\% confidence retains 93.6\% of decisions at
+83.0\% accuracy; on splits whose two candidates are deliberately near-tied, the same
+threshold retains 79.8\% at 62.6\% and the separation between correct and incorrect
+decisions nearly vanishes. We report calibration, order-invariance and instrument
+comparisons together with the comparisons in which the collaborative system does not
+come out ahead.
+
+\subsection{Keywords}\label{keywords}
+
+multi-model collaboration; confidence calibration; selective prediction;
+uncertainty quantification; LLM-as-judge; Meta-Coordination Layer
+
+\subsection{1 Introduction}\label{introduction}
+
+\subsubsection{1.1 Problem and background}\label{problem}
+
+For expert questions --- a research question, a technical analysis, a business case ---
+there is frequently no answer key. Evaluation therefore shifts from \emph{is this
+correct} to \emph{which of these is better}, and any deployed system must additionally
+answer a third question that no benchmark score covers: \emph{how much should this
+judgment be trusted?}
+
+A single model supplies a verdict and, when prompted, a confidence. The two come from
+the same forward pass, so the confidence is a report about the model's own internal
+state rather than evidence about the task. In practice this is visible as
+high-confidence errors, and it is the reason a single-model confidence cannot be used
+directly as an accept/reject gate.
+
+The MCL framework takes a different route. Independent models produce candidates; the
+candidates are cross-examined; an arbitration step selects among them and attaches a
+confidence to the selection. The confidence is then a summary of a comparison between
+concrete, externally produced candidates rather than an introspection, and the
+comparison can be re-run with the candidates exchanged.
+
+\subsubsection{1.2 Research questions and hypotheses}\label{questions}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}p{0.06\linewidth}p{0.52\linewidth}p{0.34\linewidth}@{}}
+\toprule
+& \textbf{Hypothesis} & \textbf{Status in this draft} \\
+\midrule
+H1 & Cross-model confidence is monotone in outcome accuracy. & Supported on two public judgment benchmarks and one rubric benchmark. \\
+H2 & Confidence supports selective judgment with a quantified risk--coverage trade-off. & Supported; magnitude depends on benchmark. \\
+H3 & The informativeness of the signal depends on how verifiable the judgment is. & Supported; the paper's central negative result. \\
+H4 & A single model's self-reported confidence is not an equivalent substitute. & \emph{[pending]} --- planned measurement, no numbers reported yet. \\
+H5 & The collaborative decision is invariant to presentation order, unlike a single-model judge. & Supported for the collaborative decision; a single-model judge shows a measurable order effect. \\
+H6 & On questions without an answer key, preference-based judgment separates systems differently from rubric scoring. & Partially supported; the two instruments disagree and the disagreement is analysed rather than averaged. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{1.3 Contributions and scope}\label{contributions}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  A calibration study of cross-model confidence on two public judgment benchmarks and
+  one expert-level rubric benchmark, reported per confidence band with sample sizes.
+\item
+  A selective-judgment analysis that converts the calibration into an actionable
+  trade-off: accuracy at a given threshold against the coverage it retains.
+\item
+  A boundary result: the signal is informative where the judgment is verifiable and
+  degrades toward no information where the candidates are near-tied.
+\item
+  An order-invariance control for the collaborative decision, contrasted with the
+  order sensitivity of a single model used as a judge.
+\item
+  An instrument comparison on questions without an answer key, in which rubric
+  scoring and preference judgment are reported side by side and the reasons for their
+  disagreement are analysed.
+\end{enumerate}
+
+The paper treats a collaborative generator and a collaborative judge as two sides of
+one mechanism and studies them with the same reporting conventions.
+
+\subsubsection{1.4 What this paper does not claim}\label{not-claim}
+
+We do not claim that collaboration is more accurate than a single model in general: on
+one public judgment benchmark the raw pick rate ties, and we report that as a result
+rather than as a caveat. We do not claim that the confidence value replaces domain
+review, or that a threshold transfers across task families --- the boundary result
+above says the opposite. We do not claim that the rubric scores in this paper are
+comparable to scores produced by a different judging pipeline; the calibration of our
+pipeline against official labels is measured and reported so that the two scales are
+kept apart.
+
+\subsection{2 Related Work}\label{related-work}
+
+\subsubsection{2.1 Multi-model collaboration and ensembling}\label{ensembles}
+
+Ensembling and multi-agent debate improve accuracy on reasoning benchmarks, and the
+mechanism is usually attributed to diversity among the members. Most of this literature
+reports accuracy. This paper asks a complementary question about the same machinery:
+what does the collaboration know about its own decisions, and can that knowledge be
+turned into a gate.
+
+\subsubsection{2.2 Confidence calibration}\label{calibration}
+
+Calibration work generally measures whether a model's stated probability matches its
+empirical accuracy, and treats overconfidence as a property of the model to be
+corrected post hoc. We study a confidence that is produced by a comparison between
+externally generated candidates rather than by introspection, and we measure it on the
+same items for which accuracy is measured, so that the two axes can be read together.
+
+\subsubsection{2.3 Selective prediction}\label{selective}
+
+Selective prediction trades coverage for accuracy using a confidence score, and is
+evaluated with risk--coverage curves. We adopt this framing because it states the
+practical value of a confidence signal in the units a user cares about, and because it
+makes the negative case explicit: when the curve is flat, the signal carries no
+information for that task family.
+
+\subsubsection{2.4 Models as judges}\label{llm-judge}
+
+Using a model to judge outputs is now standard practice, and its known failure modes
+include position bias and self-preference. Both matter directly here: the paper
+measures the collaborative decision's sensitivity to position, and it compares
+preference judgments produced by different instruments, including a single-model judge
+that shares provenance with one of the candidates.
+
+\subsection{3 The MCL Framework Under Study}\label{framework}
+
+The Meta-Coordination Layer is a framework for coordinating heterogeneous models:
+candidates are generated independently, cross-examined, and fused by a selection step,
+with the whole procedure repeated at several quality--cost operating points. The
+framework is instantiated in this paper through two deployed systems, described here at
+the level of abstraction at which the framework itself is published.
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Collaborative generator.} Given an open question, it returns a deliverable
+  consisting of an answer body together with the reasoning the model states for it.
+\item
+  \textbf{Collaborative judge.} Given a task and two candidate answers, it returns
+  which candidate is better, a confidence value between 0 and 100\%, and a short
+  reason. The judge never sees a rubric or a score.
+\end{itemize}
+
+Both are exposed as OpenAI-compatible endpoints and were run against the benchmarks in
+Section 4 through their public interfaces, using the same code paths that serve
+production traffic. Internal configuration --- member selection, coordination depth and
+parameterisation of the operating points --- is not part of this paper and is not
+required to reproduce any number reported here, all of which are measurements of
+externally observable behaviour.
+
+\subsection{4 Experimental Setup and Reporting Conventions}\label{setup}
+
+\subsubsection{4.1 Benchmarks}\label{benchmarks}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}llrl@{}}
+\toprule
+\textbf{Benchmark} & \textbf{What it measures} & \textbf{Size} & \textbf{Source} \\
+\midrule
+ProfBench & expert deliverables, scored criterion by criterion & 40 tasks, 4 domains & NVIDIA, public \\
+JudgeBench & judging between two answers, objective items & 620 pairs & public \\
+ContextualJudgeBench & judging between near-tied candidates, 8 splits & 2,000 pairs & Salesforce, public \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+All three are third-party public benchmarks. We do not redistribute their contents; the
+protocols are theirs and are followed verbatim.
+
+\subsubsection{4.2 Protocols and aggregation}\label{protocols}
+
+\begin{itemize}
+\tightlist
+\item
+  \textbf{Rubric scoring.} Per-criterion Yes/No with the official prompt verbatim,
+  temperature 0, top\_p 1, no output cap. Scores are \emph{task-level means}: each task
+  is averaged first and the tasks are then averaged. Pooled per-criterion means differ
+  from this convention by up to 1.7 points on our data, so the two are not
+  interchangeable and only the task-level convention is reported.
+\item
+  \textbf{Judging.} First verdict per pair under the official protocol. For CJB,
+  \emph{consistent accuracy} requires the same correct pick in both response orders;
+  the random floor is 25\%.
+\item
+  \textbf{Exclusions.} Excluded items are disclosed rather than imputed: 2 of 40
+  ProfBench tasks (no answer was produced), 6 of 620 JudgeBench pairs and 12 CJB orders
+  (platform failures after retries).
+\item
+  \textbf{Judge calibration.} Our rubric pipeline is calibrated against the official
+  per-criterion labels on the official reference draft: 74.0\% agreement, F1 0.761 on
+  1,162 criteria. The residual per-domain bias is reported with the results, and
+  absolute scores are not compared across pipelines.
+\end{itemize}
+
+\subsubsection{4.3 What is measured against what}\label{against}
+
+Every comparison in this paper is between systems evaluated on the same items, under
+the same protocol, with the same judging pipeline, and all reported margins are
+accompanied by the counts they are computed from.
+
+\subsection{5 RQ1: Is Cross-Model Confidence Calibrated?}\label{rq1}
+
+\subsubsection{5.1 Confidence bands against outcomes}\label{bands}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+\textbf{Confidence band} & \multicolumn{2}{c}{\textbf{JudgeBench}} & \multicolumn{2}{c}{\textbf{CJB}} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}
+ & share & accuracy & share & accuracy \\
+\midrule
+$\geq$ 90\% & 45.6\% & 99.6\% & 19.8\% & 83.3\% \\
+80--90\% & 29.7\% & 94.0\% & 37.3\% & 76.4\% \\
+70--80\% & 13.2\% & 84.1\% & 29.7\% & 63.6\% \\
+$<$ 70\% & 10.5\% & 67.7\% & 13.3\% & 55.4\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Monotonicity holds on both benchmarks. The two differ in where the mass sits, and that
+difference is itself informative: on JudgeBench nearly half of the judgments are made
+at $\geq$ 90\% confidence, while on CJB --- whose splits are designed to be near-tied
+--- only a fifth are.
+
+\subsubsection{5.2 Separation between correct and incorrect decisions}\label{separation}
+
+Mean stated confidence is 85.8\% for correct and 65.2\% for incorrect judgments on
+JudgeBench (a 20.6-point separation), and 80.0\% against 73.6\% on CJB (6.4 points).
+The narrowing of the separation is the first sign of the boundary result developed in
+Section 7.
+
+\subsubsection{5.3 Self-reported confidence of a single model \emph{[pending]}}\label{single-model-confidence}
+
+This subsection is reserved for the measurement of a single model's self-reported
+confidence on the same judged items, elicited under the same protocol with a confidence
+field added to its output. No numbers are reported here until that measurement is
+complete. The comparison is pre-declared: the same items, the same protocol, the same
+metrics, one model instead of the collaborative judge.
+
+\subsection{6 RQ2: Selective Judgment}\label{rq2}
+
+\subsubsection{6.1 Risk--coverage}\label{risk-coverage}
+
+Gating a decision on its confidence converts calibration into a policy. Table~3 reports
+the accuracy retained at three thresholds and the share of decisions each threshold
+keeps.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Data} & \textbf{no gate} & \textbf{$\geq$ 70\%} & \textbf{$\geq$ 80\%} & \textbf{$\geq$ 90\%} \\
+\midrule
+JudgeBench & 92.5\% & 89.4\% / 95.4\% & 76.1\% / 97.4\% & 46.1\% / 99.6\% \\
+CJB, checkable splits & 81.5\% & 93.6\% / 83.0\% & 77.6\% / 84.2\% & 34.7\% / 84.7\% \\
+CJB, near-tied splits & 60.9\% & 79.8\% / 62.6\% & 36.5\% / 67.4\% & 4.9\% / 73.5\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Cells are \emph{coverage / accuracy}. The top row is the case the signal is for: a user
+willing to set aside one judgment in ten buys roughly three points of accuracy. The
+bottom row is the case it is not for: at the same threshold the gate adds under two
+points, and pushing to 90\% leaves almost nothing to act on. Both are useful answers ---
+the second says the two candidates really are close, which is a decision the user can
+make on other grounds.
+
+\subsubsection{6.2 Reading the gate as a product claim}\label{gate-product}
+
+The operational statement of this section is deliberately narrow: a confidence value is
+worth shipping when the curve it produces is not flat, and the curve must be measured
+per task family rather than advertised once. \emph{[Section to be extended once the
+single-model comparison of 5.3 is available, so that the two curves can be shown
+together.]}
+
+\subsection{7 RQ3: Where the Signal Holds and Where It Does Not}\label{rq3}
+
+\subsubsection{7.1 Verifiability, not difficulty}\label{verifiability}
+
+Splitting CJB by whether the correct judgment is checkable separates two regimes with
+the same model and the same confidence scale. On checkable splits the gate is
+efficient; on near-tied splits the difference between the mean confidence of correct
+and incorrect decisions shrinks to 3.2 points and the gate buys almost nothing. The
+relevant variable is therefore not how hard the item is but whether the comparison can
+be settled by inspection at all.
+
+\subsubsection{7.2 Order invariance}\label{order}
+
+\begin{itemize}
+\tightlist
+\item
+  The collaborative judge, re-run with the two candidates exchanged between the option
+  positions, kept the same pick in 10 of 10 sampled tasks.
+\item
+  A single model used as a judge over 76 head-to-head comparisons picked the candidate
+  in the second position at a rate 7.9 points higher than the candidate in the first.
+\end{itemize}
+
+The contrast is the point: the collaborative decision is stable under an intervention
+that measurably moves a single-model judge.
+
+\subsection{8 RQ4: Preference and Rubric Are Different Instruments}\label{rq4}
+
+\subsubsection{8.1 Two measurements of the same comparison}\label{two-measurements}
+
+On ProfBench, scored criterion by criterion on the same 38 tasks by the same pipeline,
+the collaborative generator scores 63.3 against 57.4 for the direct baseline and 55.6
+for the official reference draft. In a separate comparison the same tasks were put to
+the collaborative judge as a rubric-blind preference question --- the task and two
+drafts, no rubric, no scores --- and the collaborative draft was chosen in 36 of 38
+tasks, at a median confidence of 85.9\%.
+
+\subsubsection{8.2 Instrument hierarchy and its limits}\label{instrument-limits}
+
+The two instruments do not measure the same thing, and the paper reports the hierarchy
+rather than choosing the flattering one:
+
+\begin{itemize}
+\tightlist
+\item
+  rubric scoring separates the systems by a few points;
+\item
+  a single-model judge sharing provenance with one candidate produces an approximately
+  even split, and in the cases where it disagrees with the rubric, it favours its own
+  provenance;
+\item
+  the collaborative judge, which never sees the rubric, picks one side almost
+  unanimously, and does so without a position effect.
+\end{itemize}
+
+None of these is ground truth. The preference result is produced by a system of our
+own, which is exactly the kind of self-preference risk documented for model judges; the
+rubric result comes from a pipeline whose calibration is measured but not perfect. The
+defensible reading is the one this section states: \emph{on questions without an answer
+key the measured difference between systems depends on which instrument is asked, and
+the instruments disagree in a structured way.}
+
+\subsection{9 Discussion and Limitations}\label{limitations}
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  \textbf{Accuracy parity is a result here, not a caveat.} On JudgeBench the
+  collaborative judge's raw accuracy ties with a single-model baseline. The paper's
+  claim is about the uncertainty axis, not about the pick rate.
+\item
+  \textbf{Every preference measurement in this paper was produced by one of the systems
+  under comparison.} The order control addresses position, not provenance. An
+  independent third-party judging instrument is required before the preference margin
+  can be read as a property of the drafts rather than of the instrument.
+\item
+  \textbf{The rubric pipeline is calibrated, not identical, to the official one}
+  (74.0\% agreement, F1 0.761, residual per-domain bias). Cross-pipeline score
+  comparisons are therefore excluded, and only same-pipeline margins are reported.
+\item
+  \textbf{Sample sizes are small at the task level.} ProfBench contributes 38 scored
+  tasks; the order-invariance control covers 10 of them. We report these as
+  engineering-grade evidence and do not perform significance testing.
+\item
+  \textbf{The confidence scale is family-dependent.} Bands transfer across the two
+  public judgment benchmarks in ordering but not in level, and the paper shows rather
+  than assumes the difference.
+\item
+  \textbf{The single-model confidence comparison is pending.} Until it is measured, H4
+  is stated as an open question and the abstract reports only measured values.
+\item
+  \textbf{Model versions drift.} Benchmarks were run at different times against hosted
+  endpoints; the baseline re-run for H4 will use a later version of the same endpoint
+  than the original runs. This is disclosed rather than corrected.
+\end{enumerate}
+
+\subsection{10 Conclusion}\label{conclusion}
+
+A collaborative system's most useful output may not be a better answer but a calibrated
+statement about how much the answer should be trusted. On two public judgment
+benchmarks the collaborative judge's accuracy ties with a single-model baseline while
+its confidence is monotone in outcome accuracy and supports a quantified
+risk--coverage trade-off; on an expert rubric benchmark the collaborative generator
+leads by a few points under rubric scoring and is preferred almost unanimously under a
+rubric-blind comparison. The same data show the limit of the claim: where the two
+candidates are genuinely close, the confidence signal stops separating right from
+wrong, and the honest reading of a low value is not \emph{the system failed} but
+\emph{the choice belongs to criteria outside the answers}.
+
+\subsection{Appendix A: Data Availability}\label{data-availability}
+
+Aggregate results, the derived tables used in this paper and the scripts that produce
+them are published at
+\url{https://github.com/TuringCorp-net/Paper-Calibrated-Confidence-MCL}. The three
+benchmarks are third-party and are referenced rather than redistributed:
+
+\begin{itemize}
+\tightlist
+\item
+  ProfBench --- \url{https://huggingface.co/datasets/nvidia/ProfBench}
+\item
+  JudgeBench --- as used in the published protocol
+\item
+  ContextualJudgeBench --- Salesforce, official 8-split release
+\end{itemize}
+
+Raw per-call logs, provider billing records and internal configuration are not
+published.
+
+\begin{thebibliography}{9}
+\tightlist
+\item
+  NVIDIA. \emph{ProfBench: Multi-Domain Rubrics requiring Professional Knowledge to
+  Answer and Judge.} arXiv:2510.18941, 2026.
+\item
+  Salesforce. \emph{ContextualJudgeBench.} 2026.
+\item
+  JudgeBench. \emph{Judging between candidate answers across MMLU-Pro, LiveBench and
+  LiveCodeBench.} 2026.
+\item
+  Zhang, L. \emph{MCL conceptual framework.} Preprint, 2026.
+  \url{https://doi.org/10.6084/m9.figshare.30645869}
+\item
+  Zhang, L. \emph{MCL-Team: Minimal Multi-Model Collaboration Surpasses Single Models
+  on LiveBench and IFEval.} Preprint, 2026.
+  \url{https://doi.org/10.6084/m9.figshare.32824352}
+\end{thebibliography}
+
+\end{document}

@@ -320,7 +320,8 @@ $<$ 70\% & 10.5\% & 67.7\% & 13.3\% & 55.4\% \\
 Monotonicity holds on both benchmarks. The two differ in where the mass sits, and that
 difference is itself informative: on JudgeBench nearly half of the judgments are made
 at $\geq$ 90\% confidence, while on CJB --- whose splits are designed to be near-tied
---- only a fifth are.
+--- only a fifth are. The bands are our reporting cut of the observed results; neither
+system was given them, and both report a continuous value (Section~5.3).
 
 \subsubsection{5.2 Separation between correct and incorrect decisions}\label{separation}
 
@@ -332,10 +333,18 @@ Section 7.
 \subsubsection{5.3 Self-reported confidence of a single model \emph{[pending]}}\label{single-model-confidence}
 
 This subsection is reserved for the measurement of a single model's self-reported
-confidence on the same judged items, elicited under the same protocol with a confidence
-field added to its output. No numbers are reported here until that measurement is
-complete. The comparison is pre-declared: the same items, the same protocol, the same
-metrics, one model instead of the collaborative judge.
+confidence on the same judged items. No numbers are reported here until that
+measurement is complete. The comparison is pre-declared: the same items, the same
+protocol, the same metrics, one model instead of the collaborative judge.
+
+The judge prompt is the official one used elsewhere in this paper, unchanged, with a
+single addition: an instruction to report a confidence value for the comparison,
+together with a short reference scale describing how to read that value. The same scale
+guidance is used by the collaborative judge, so both systems are asked for the same kind
+of self-assessment and any difference in the resulting confidence is not attributable to
+the instructions. We describe that guidance rather than reproduce it. The four bands of
+Section~5.1 are derived from observed results after the runs; they are our cut of a
+continuous value, not a vocabulary handed to either system.
 
 \subsection{6 RQ2: Selective Judgment}\label{rq2}
 

@@ -1,10 +1,12 @@
+[![DOI](https://img.shields.io/badge/DOI-10.6084%2Fm9.figshare.33684823-blue?logo=doi&logoColor=white)](https://doi.org/10.6084/m9.figshare.33684823)
+
 # Paper: Cross-Model Confidence in the MCL Framework
 
 **Cross-Model Confidence in the MCL Framework: Calibrated Uncertainty for Selective Judgment**
 
 Preprint (work in progress). Author: Li Zhang. Affiliation: TuringCorp.
 
-> **Status: 1.0 (2026-09-13).** The section structure, the evaluation protocol and all
+> **Status: 1.1 (2026-09-13).** Preprint DOI: <https://doi.org/10.6084/m9.figshare.33684823> The section structure, the evaluation protocol and all
 > measured results are in place, including the single-model confidence comparison of
 > Section 5.3 (same items, same protocol, one model instead of the collaborative judge).
 

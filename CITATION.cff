@@ -5,8 +5,9 @@ authors:
   - family-names: Zhang
     given-names: Li
 year: 2026
-version: "1.0"
-url: "https://github.com/TuringCorp-net/Paper-Calibrated-Confidence-MCL"
+version: "1.1"
+doi: 10.6084/m9.figshare.33684823
+url: "https://doi.org/10.6084/m9.figshare.33684823"
 preferred-citation:
   type: article
   title: "Cross-Model Confidence in the MCL Framework: Calibrated Uncertainty for Selective Judgment"
@@ -14,3 +15,4 @@ preferred-citation:
     - family-names: Zhang
       given-names: Li
   year: 2026
+  doi: 10.6084/m9.figshare.33684823

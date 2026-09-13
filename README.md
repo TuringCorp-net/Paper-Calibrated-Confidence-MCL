@@ -4,7 +4,7 @@
 
 Preprint (work in progress). Author: Li Zhang. Affiliation: TuringCorp.
 
-> **Status: draft v0.5.** The section structure, the evaluation protocol and all
+> **Status: draft v0.7.** The section structure, the evaluation protocol and all
 > measured results are in place, including the single-model confidence comparison of
 > Section 5.3 (same items, same protocol, one model instead of the collaborative judge).
 
@@ -40,10 +40,15 @@ them as two sides of one mechanism:
 
 ```
 paper/main.tex              LaTeX source (compile with pdfLaTeX)
+paper/figures/*.pdf         vector figures (calibration, risk--coverage, position swap)
 data/README.md              what is published here, and what is not
 CITATION.cff                citation metadata (DOI added on preprint release)
 LICENSE-CC-BY-4.0.md        license
 ```
+
+Margins are reported with bootstrap intervals over items or pairs, and the accounting
+conventions (first successful verdict; the single-model confidence run as a separate
+execution) are stated in Section 4.4.
 
 ## Evaluated on public benchmarks
 

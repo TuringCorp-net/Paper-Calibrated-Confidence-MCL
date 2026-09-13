@@ -132,6 +132,7 @@ comparison can be re-run with the candidates exchanged.
 \centering
 \small
 \caption{Hypotheses and their status in this paper.}\label{tab:hypotheses}
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{@{}p{0.06\linewidth}p{0.52\linewidth}p{0.34\linewidth}@{}}
 \toprule
 & \textbf{Hypothesis} & \textbf{Status in this draft} \\
@@ -143,7 +144,7 @@ H4 & A single model's self-reported confidence is not an equivalent substitute. 
 H5 & The collaborative decision is invariant to presentation order, unlike a single-model judge. & Supported for the collaborative decision; a single-model judge shows a measurable order effect. \\
 H6 & On questions without an answer key, preference-based judgment separates systems differently from rubric scoring. & Partially supported; the two instruments disagree and the disagreement is analysed rather than averaged. \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \subsubsection{1.3 Contributions and scope}\label{contributions}
@@ -273,6 +274,7 @@ externally observable behaviour.
 \centering
 \small
 \caption{Benchmarks used, all third-party and public.}\label{tab:benchmarks}
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{@{}llrl@{}}
 \toprule
 \textbf{Benchmark} & \textbf{What it measures} & \textbf{Size} & \textbf{Source} \\
@@ -281,11 +283,15 @@ ProfBench & expert deliverables, scored criterion by criterion & 40 tasks, 4 dom
 JudgeBench & judging between two answers, objective items & 620 pairs & public \\
 ContextualJudgeBench & judging between near-tied candidates, 8 splits & 2,000 pairs & Salesforce, public \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 All three are third-party public benchmarks. We do not redistribute their contents; the
-protocols are theirs and are followed verbatim.
+protocols are theirs and are followed verbatim. ProfBench is the one that matches the
+question this paper asks: its tasks are expert-level, they have no single correct answer,
+and each is scored criterion by criterion against an official rubric --- the combination a
+collaborative system should either pass or fail visibly, rather than a benchmark where
+surface fluency is enough.
 
 \subsubsection{4.2 Protocols and aggregation}\label{protocols}
 
@@ -328,6 +334,57 @@ every run by the name we called, report the confidence-elicitation run's raw acc
 alongside its confidence so that drift is visible, and record the version question as a
 limitation rather than assuming it away.
 
+\subsubsection{4.4 Accounting conventions, re-runs and sampling variability}\label{conventions}
+
+Three conventions matter for reading every table below, so we state them instead of leaving
+them to be inferred.
+
+\textbf{First successful verdict.} Both columns of every judgment comparison use the first
+verdict that succeeded for a pair; pairs whose first verdict failed are excluded and counted
+in the coverage line. The baseline file contains retries for 70 of the 620 JudgeBench pairs,
+and the alternative convention --- taking the latest successful verdict --- would move the
+baseline from 92.2\% to 92.7\% and the agreement from 96.1\% to 95.9\%. Under either
+convention the collaborative judge and the baseline sit within half a point of each other on
+this benchmark, which is why that comparison is reported as a tie.
+
+\textbf{The single-model confidence run is a separate execution.} Section~5.3 required one
+additional field from the same model, so it was executed after the original benchmarks
+(2026-09-13, against the original runs of 2026-09-06 to 2026-09-09, both against hosted
+endpoints under the model name recorded in Section~4.3). Verdicts agree between the two
+executions for 95.6\% of JudgeBench pairs and 89.1\% of CJB orders; both executions'
+accuracies are reported side by side so that the difference is visible rather than assumed
+away.
+
+\textbf{Sampling variability.} All three benchmarks are fixed sets of items, not samples
+drawn from a population, so the intervals below describe how much these item sets move under
+resampling --- not a population inference. Treating each task or pair as the unit and
+resampling with replacement 10{,}000 times:
+
+\begin{table}[h]
+\centering
+\small
+\caption{Sampling variability of the reported margins (10{,}000 bootstrap resamples over items or pairs).}
+\label{tab:bootstrap}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{@{}llrrl@{}}
+\toprule
+\textbf{Comparison} & \textbf{Unit} & \textbf{Margin} & \textbf{95\% interval} & \textbf{Reading} \\
+\midrule
+ProfBench, collaborative $-$ official o3 draft & 38 tasks & $+7.7$ & $[+0.3, +15.7]$ & outside zero, barely \\
+ProfBench, collaborative $-$ direct baseline & 38 tasks & $+5.9$ & $[+1.7, +10.5]$ & outside zero \\
+JudgeBench, collaborative $-$ direct baseline & 614 pairs & $+0.3$ & $[-1.3, +2.0]$ & \textbf{crosses zero: a tie} \\
+CJB, collaborative $-$ direct baseline & 1{,}991 pairs & $+1.7$ & $[+0.4, +3.1]$ & outside zero, small \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+The reading of the table is part of the result. The one comparison this paper declines to
+claim --- accuracy on JudgeBench --- is exactly the one whose interval crosses zero, and the
+rubric-benchmark lead survives resampling at 38 tasks while sitting close to the boundary.
+Margins on the two public judgment benchmarks are small in absolute terms, which is
+consistent with the claim the paper does make: that the difference between the two systems
+lives on the uncertainty axis.
+
 \subsection{5 RQ1: Is Cross-Model Confidence Calibrated?}\label{rq1}
 
 \subsubsection{5.1 Confidence bands against outcomes}\label{bands}
@@ -355,6 +412,18 @@ difference is itself informative: on JudgeBench nearly half of the judgments are
 at $\geq$ 90\% confidence, while on CJB --- whose splits are designed to be near-tied
 --- only a fifth are. The bands are our reporting cut of the observed results; neither
 system was given them, and both report a continuous value (Section~5.3).
+
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figures/fig1-calibration.pdf}
+\caption{Observed accuracy by confidence band, collaborative judge against the single model
+asked for its own confidence under the same guidance (paired items). The single model spends
+its confidence at the top of the scale, and on JudgeBench its lower bands do not order
+correctly ($69.6\%$, $34.6\%$, $50.0\%$) while the collaborative judge's four bands are
+monotone.}
+\label{fig:calibration}
+\end{figure}
 
 \subsubsection{5.2 Separation between correct and incorrect decisions}\label{separation}
 
@@ -433,6 +502,7 @@ keeps.
 \centering
 \small
 \caption{Selective judgment: coverage and accuracy at three confidence thresholds.}\label{tab:rc}
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{@{}lrrr@{}}
 \toprule
 \textbf{Data} & \textbf{no gate} & \textbf{$\geq$ 70\%} & \textbf{$\geq$ 80\%} & \textbf{$\geq$ 90\%} \\
@@ -441,7 +511,7 @@ JudgeBench & 92.5\% & 89.4\% / 95.4\% & 76.1\% / 97.4\% & 46.1\% / 99.6\% \\
 CJB, checkable splits & 81.5\% & 93.6\% / 83.0\% & 77.6\% / 84.2\% & 34.7\% / 84.7\% \\
 CJB, near-tied splits & 60.9\% & 79.8\% / 62.6\% & 36.5\% / 67.4\% & 4.9\% / 73.5\% \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 Cells are \emph{coverage / accuracy}. The top row is the case the signal is for: a user
@@ -450,6 +520,30 @@ bottom row is the case it is not for: at the same threshold the gate adds under 
 points, and pushing to 90\% leaves almost nothing to act on. Both are useful answers ---
 the second says the two candidates really are close, which is a decision the user can
 make on other grounds.
+
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\linewidth]{figures/fig2-risk-coverage.pdf}
+\caption{Risk--coverage for the collaborative judge (solid) and the single model (dashed).
+Left: on objectively checkable judgments the two curves nearly coincide --- the accuracy is
+the same, so the gate is what differs. Right: on checkable CJB splits the collaborative
+curve sits above the single model's at every coverage, which is where the gate pays. Points
+retaining under $3\%$ of items are omitted; they are computed from a handful of cases and
+would otherwise dominate the left edge.}
+\label{fig:rc}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.55\linewidth]{figures/fig2b-risk-coverage-neartie.pdf}
+\caption{The same comparison on CJB splits whose candidates are deliberately near-tied.
+Here the collaborative advantage does not come from a better gate at high thresholds --- at
+$90\%$ confidence only $4.9\%$ of orders remain --- but from being somewhat more accurate at
+every coverage, which is the regime in which the honest answer is that either candidate is
+defensible.}
+\label{fig:rc-neartie}
+\end{figure}
 
 \subsubsection{6.2 The same gate on a single model's confidence}\label{gate-single}
 
@@ -498,6 +592,16 @@ be settled by inspection at all.
 
 The contrast is the point: the collaborative decision is stable under an intervention
 that measurably moves a single-model judge.
+
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.58\linewidth]{figures/fig3-order-invariance.pdf}
+\caption{Position-swap audit over all 37 tasks where the judge had made a pick, split by the
+confidence the judge attached to the swapped comparison. Every change falls in the lower
+band; the single exception is a task the judge had already marked as a near-tie.}
+\label{fig:order}
+\end{figure}
 
 \subsection{8 RQ4: Preference and Rubric Are Different Instruments}\label{rq4}
 

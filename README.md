@@ -4,11 +4,9 @@
 
 Preprint (work in progress). Author: Li Zhang. Affiliation: TuringCorp.
 
-> **Status: framework v0.1.** The section structure, the evaluation protocol and the
-> results that are already measured are in place. One planned experiment — eliciting
-> self-reported confidence from a single model on the same judged items, to contrast it
-> with cross-model confidence — is not run yet; those subsections are marked
-> `[pending]` in the LaTeX source and carry no numbers.
+> **Status: draft v0.5.** The section structure, the evaluation protocol and all
+> measured results are in place, including the single-model confidence comparison of
+> Section 5.3 (same items, same protocol, one model instead of the collaborative judge).
 
 ## What this paper studies
 
@@ -88,9 +86,8 @@ comparisons in which the collaborative system does not come out ahead.
 
 ## Open items
 
-- Naming of the baseline model in the main text is pending a disclosure review.
-- The single-model self-reported confidence comparison is planned; until it is run,
-  the abstract reports only measured values.
+- The single-model comparison is a separate pass executed after the original runs; the
+  two systems' pick rates are reported side by side so version drift is visible.
 
 ## Related preprints
 

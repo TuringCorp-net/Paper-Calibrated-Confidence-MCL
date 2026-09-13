@@ -48,7 +48,7 @@
 \item
   \textbf{Affiliation}: TuringCorp
 \item
-  \textbf{Version}: framework draft v0.1 (2026-09-13)
+  \textbf{Version}: draft v0.5 (2026-09-13)
 \end{itemize}
 
 \begin{center}\rule{0.5\linewidth}{0.5pt}\end{center}
@@ -133,7 +133,7 @@ comparison can be re-run with the candidates exchanged.
 H1 & Cross-model confidence is monotone in outcome accuracy. & Supported on two public judgment benchmarks and one rubric benchmark. \\
 H2 & Confidence supports selective judgment with a quantified risk--coverage trade-off. & Supported; magnitude depends on benchmark. \\
 H3 & The informativeness of the signal depends on how verifiable the judgment is. & Supported; the paper's central negative result. \\
-H4 & A single model's self-reported confidence is not an equivalent substitute. & \emph{[pending]} --- planned measurement, no numbers reported yet. \\
+H4 & A single model's self-reported confidence is not an equivalent substitute. & Supported: at equal pick rates the single model issues top-band confidence far more often and separates right from wrong far less (Section~5.3). \\
 H5 & The collaborative decision is invariant to presentation order, unlike a single-model judge. & Supported for the collaborative decision; a single-model judge shows a measurable order effect. \\
 H6 & On questions without an answer key, preference-based judgment separates systems differently from rubric scoring. & Partially supported; the two instruments disagree and the disagreement is analysed rather than averaged. \\
 \bottomrule
@@ -333,21 +333,62 @@ JudgeBench (a 20.6-point separation), and 80.0\% against 73.6\% on CJB (6.4 poin
 The narrowing of the separation is the first sign of the boundary result developed in
 Section 7.
 
-\subsubsection{5.3 Self-reported confidence of a single model \emph{[pending]}}\label{single-model-confidence}
+\subsubsection{5.3 Self-reported confidence of a single model}\label{single-model-confidence}
 
-This subsection is reserved for the measurement of a single model's self-reported
-confidence on the same judged items. No numbers are reported here until that
-measurement is complete. The comparison is pre-declared: the same items, the same
-protocol, the same metrics, one model instead of the collaborative judge.
-
-The judge prompt is the official one used elsewhere in this paper, unchanged, with a
-single addition: an instruction to report a confidence value for the comparison,
+We asked the same single-model baseline used throughout this paper --- DeepSeek V4 Flash,
+called directly --- to judge the same items under the official prompt, unchanged except
+for one addition: an instruction to report a confidence value for the comparison,
 together with a short reference scale describing how to read that value. The same scale
 guidance is used by the collaborative judge, so both systems are asked for the same kind
 of self-assessment and any difference in the resulting confidence is not attributable to
 the instructions. We describe that guidance rather than reproduce it. The four bands of
 Section~5.1 are derived from observed results after the runs; they are our cut of a
 continuous value, not a vocabulary handed to either system.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{@{}lrr@{}}
+\toprule
+ & \textbf{DeepSeek V4 Flash} & \textbf{Collaborative judge} \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{JudgeBench} (614 paired judgments)} \\
+accuracy & 91.4\% & 92.5\% \\
+mean confidence, correct & 96.4\% & 85.8\% \\
+mean confidence, incorrect & 80.2\% & 65.2\% \\
+share of judgments at $\geq$ 90\% & 85.5\% & 46.1\% \\
+accuracy by band & 97.1 / 69.6 / 34.6 / 50.0 & 99.6 / 94.0 / 84.1 / 67.7 \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{ContextualJudgeBench} (3{,}987 paired orders)} \\
+consistent accuracy & 64.7\% & 67.1\% \\
+mean confidence, correct & 89.3\% & 80.0\% \\
+mean confidence, incorrect & 85.5\% & 73.6\% \\
+separation & 3.8 pts & 6.5 pts \\
+share of judgments at $\geq$ 90\% & 51.8\% & 19.8\% \\
+accuracy by band & 79.4 / 59.4 / 54.7 / 47.7 & 83.3 / 76.4 / 63.6 / 55.4 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Two differences emerge and they point the same way. First, the single model spends its
+confidence at the top of the scale: 85.5\% of its JudgeBench judgments and 51.8\% of its
+CJB judgments are made at $\geq$ 90\%, against 46.1\% and 19.8\% for the collaborative
+judge. Second, that confidence separates outcomes much less well where the question is
+genuinely hard. On CJB the single model is wrong on 428 of its 2{,}072 high-confidence
+judgments --- roughly one in five --- and the gap between its mean confidence when it is
+right and when it is wrong is 3.8 points, against 6.5 for the collaborative judge.
+
+The difference is visible in the shape of the bands rather than in any single number. On
+JudgeBench the collaborative judge's four bands are monotone and each holds enough
+judgments to be read (283 / 184 / 82 / 65), while the single model leaves only 88
+judgments below its top band and those bands do not order correctly (69.6\%, 34.6\%,
+50.0\%). On CJB the same pattern repeats with more mass (79.4 / 59.4 / 54.7 / 47.7).
+
+This is not a claim about model quality: the two systems pick correctly at a similar rate
+on both benchmarks, and the claim of this paper concerns the uncertainty axis, not the
+pick rate. What the measurements support is narrower and, we think, more useful --- an
+accuracy figure can be matched by a single model, but a confidence that can be used as a
+gate cannot be assumed to come with it.
 
 \subsection{6 RQ2: Selective Judgment}\label{rq2}
 
@@ -403,7 +444,11 @@ be settled by inspection at all.
 \tightlist
 \item
   The collaborative judge, re-run with the two candidates exchanged between the option
-  positions, kept the same pick in 10 of 10 sampled tasks.
+  positions on every task where it had made a pick, kept the same draft in 36 of 37. The
+  single change occurred on a task the judge had already flagged as a near-tie (23\%
+  confidence); every pick it made at 80\% confidence or above --- 23 of the 37 --- came
+  back identical. Position invariance therefore holds where the judge is confident, and
+  the one exception is one the judge had itself flagged.
 \item
   A single model used as a judge --- DeepSeek V4 Flash, over 76 head-to-head
   comparisons --- picked the candidate in the second position at a rate 7.9 points
@@ -476,8 +521,10 @@ the instruments disagree in a structured way.}
   public judgment benchmarks in ordering but not in level, and the paper shows rather
   than assumes the difference.
 \item
-  \textbf{The single-model confidence comparison is pending.} Until it is measured, H4
-  is stated as an open question and the abstract reports only measured values.
+  \textbf{The single-model comparison is same-protocol but not same-run.} The confidence
+  comparison of Section~5.3 was executed after the original runs as a separate pass over
+  the same items; the two systems' pick rates are reported side by side so any drift is
+  visible rather than assumed away.
 \item
   \textbf{Model versions drift.} Benchmarks were run at different times against hosted
   endpoints. The baseline is DeepSeek V4 Flash throughout; the confidence-elicitation

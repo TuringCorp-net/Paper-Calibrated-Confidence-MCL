@@ -29,6 +29,7 @@
 \setlength{\emergencystretch}{3em}
 \usepackage[margin=1in]{geometry}
 \usepackage{booktabs}
+\usepackage{array}
 \usepackage{graphicx}
 \usepackage{microtype}
 
@@ -128,12 +129,12 @@ comparison can be re-run with the candidates exchanged.
 
 \subsubsection{1.2 Research questions and hypotheses}\label{questions}
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Hypotheses and their status in this paper.}\label{tab:hypotheses}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{@{}p{0.06\linewidth}p{0.52\linewidth}p{0.34\linewidth}@{}}
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{%
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{0.06\linewidth}>{\raggedright\arraybackslash}p{0.50\linewidth}>{\raggedright\arraybackslash}p{0.34\linewidth}@{}}
 \toprule
 & \textbf{Hypothesis} & \textbf{Status in this draft} \\
 \midrule
@@ -270,11 +271,11 @@ externally observable behaviour.
 
 \subsubsection{4.1 Benchmarks}\label{benchmarks}
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Benchmarks used, all third-party and public.}\label{tab:benchmarks}
-\resizebox{\linewidth}{!}{%
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{%
 \begin{tabular}{@{}llrl@{}}
 \toprule
 \textbf{Benchmark} & \textbf{What it measures} & \textbf{Size} & \textbf{Source} \\
@@ -360,12 +361,12 @@ drawn from a population, so the intervals below describe how much these item set
 resampling --- not a population inference. Treating each task or pair as the unit and
 resampling with replacement 10{,}000 times:
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Sampling variability of the reported margins (10{,}000 bootstrap resamples over items or pairs).}
 \label{tab:bootstrap}
-\resizebox{\linewidth}{!}{%
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{%
 \begin{tabular}{@{}llrrl@{}}
 \toprule
 \textbf{Comparison} & \textbf{Unit} & \textbf{Margin} & \textbf{95\% interval} & \textbf{Reading} \\
@@ -389,7 +390,7 @@ lives on the uncertainty axis.
 
 \subsubsection{5.1 Confidence bands against outcomes}\label{bands}
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Confidence bands against observed accuracy, per benchmark.}\label{tab:bands}
@@ -414,7 +415,7 @@ at $\geq$ 90\% confidence, while on CJB --- whose splits are designed to be near
 system was given them, and both report a continuous value (Section~5.3).
 
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 \includegraphics[width=\linewidth]{figures/fig1-calibration.pdf}
 \caption{Observed accuracy by confidence band, collaborative judge against the single model
@@ -444,7 +445,7 @@ the instructions. We describe that guidance rather than reproduce it. The four b
 Section~5.1 (Table~\ref{tab:bands}) are derived from observed results after the runs; they are our cut of a
 continuous value, not a vocabulary handed to either system.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Self-reported confidence of a single model against the collaborative judge, on the same items.}\label{tab:single}
@@ -498,12 +499,12 @@ Gating a decision on its confidence converts calibration into a policy. Table~\r
 the accuracy retained at three thresholds and the share of decisions each threshold
 keeps.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \small
 \caption{Selective judgment: coverage and accuracy at three confidence thresholds.}\label{tab:rc}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{@{}lrrr@{}}
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{%
+\begin{tabular}{@{}lrrrr@{}}
 \toprule
 \textbf{Data} & \textbf{no gate} & \textbf{$\geq$ 70\%} & \textbf{$\geq$ 80\%} & \textbf{$\geq$ 90\%} \\
 \midrule
@@ -522,7 +523,7 @@ the second says the two candidates really are close, which is a decision the use
 make on other grounds.
 
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 \includegraphics[width=\linewidth]{figures/fig2-risk-coverage.pdf}
 \caption{Risk--coverage for the collaborative judge (solid) and the single model (dashed).
@@ -534,7 +535,7 @@ would otherwise dominate the left edge.}
 \label{fig:rc}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 \includegraphics[width=0.55\linewidth]{figures/fig2b-risk-coverage-neartie.pdf}
 \caption{The same comparison on CJB splits whose candidates are deliberately near-tied.
@@ -594,7 +595,7 @@ The contrast is the point: the collaborative decision is stable under an interve
 that measurably moves a single-model judge.
 
 
-\begin{figure}[h]
+\begin{figure}[ht]
 \centering
 \includegraphics[width=0.58\linewidth]{figures/fig3-order-invariance.pdf}
 \caption{Position-swap audit over all 37 tasks where the judge had made a pick, split by the

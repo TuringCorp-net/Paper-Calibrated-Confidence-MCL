@@ -58,9 +58,10 @@
 
 A single model answers a question and, asked, reports a confidence about its own answer.
 That signal is introspective: nothing outside the model checks it, and a wrong answer can
-be a confident one. We study an alternative from the Meta-Coordination Layer (MCL)
-framework, in which heterogeneous models generate and cross-examine independently and an
-arbitration step selects among the candidates, emitting a confidence with every decision.
+be a confident one. We study an alternative built on the Meta-Coordination Layer (MCL)
+framework: a collaborative system that either produces an answer or judges between two
+candidate answers, and that reports a confidence value with every decision.
+
 We evaluate its two deployed instantiations --- a collaborative generator and a
 collaborative judge --- on two public judgment benchmarks (JudgeBench, 614 judgments;
 ContextualJudgeBench, 1{,}991 pairs) and an expert-level rubric benchmark (ProfBench, 38
@@ -101,11 +102,11 @@ state rather than evidence about the task. In practice this is visible as
 high-confidence errors, and it is the reason a single-model confidence cannot be used
 directly as an accept/reject gate.
 
-The MCL framework takes a different route. Independent models produce candidates; the
-candidates are cross-examined; an arbitration step selects among them and attaches a
-confidence to the selection. The confidence is then a summary of a comparison between
-concrete, externally produced candidates rather than an introspection, and the
-comparison can be re-run with the candidates exchanged.
+The MCL framework takes a different route. Its systems are asked for a decision --- an
+answer, or a choice between two candidate answers --- and report a confidence alongside
+it, and the same decision can be re-run with the two candidates exchanged. The confidence
+therefore summarises what the system did with material it was given, rather than a single
+pass over the question, which is the property this paper sets out to measure.
 
 \subsubsection{1.2 Research questions and hypotheses}\label{questions}
 
@@ -187,11 +188,11 @@ about its own decisions, and can that knowledge be turned into a gate?
 Calibration research measures whether a stated probability matches empirical accuracy, and
 treats overconfidence as a property of a model to be corrected after the fact
 \cite{guo2017calibration}. The confidence studied here is not the probability of a token
-or of an answer; it is produced by a comparison between externally generated candidates,
-and we measure it on the same items and against the same outcomes as accuracy, so that the
-two axes can be read together. The closest precedent in spirit is the finding that model
+or of an answer; it is reported alongside a decision between two candidates supplied to
+the system, and we measure it on the same items and against the same outcomes as accuracy,
+so that the two axes can be read together. The closest precedent in spirit is the finding that model
 evaluators recognise and favour their own generations \cite{panickssery2024selfpreference},
-which motivates both the panel construction studied here and the self-preference control
+which motivates both the system studied here and the self-preference control
 we run in Section~8.
 
 \subsubsection{2.3 Selective prediction}\label{selective}
@@ -223,11 +224,11 @@ are followed verbatim; the paper links to them rather than redistributing their 
 
 \subsection{3 The MCL Framework Under Study}\label{framework}
 
-The Meta-Coordination Layer is a framework for coordinating heterogeneous models:
-candidates are generated independently, cross-examined, and fused by a selection step,
-with the whole procedure repeated at several quality--cost operating points. The
-framework is instantiated in this paper through two deployed systems, described here at
-the level of abstraction at which the framework itself is published.
+The Meta-Coordination Layer is a published framework for coordinating multiple models,
+described at a high level in its own preprint. This paper does not restate, extend or
+depend on that description. What is studied here is the behaviour of its two deployed
+instantiations, treated as black boxes: every measurement below is of observable inputs
+and outputs, not of internal structure.
 
 \begin{itemize}
 \tightlist
@@ -242,8 +243,7 @@ the level of abstraction at which the framework itself is published.
 
 Both are exposed as OpenAI-compatible endpoints and were run against the benchmarks in
 Section 4 through their public interfaces, using the same code paths that serve
-production traffic. Internal configuration --- member selection, coordination depth and
-parameterisation of the operating points --- is not part of this paper and is not
+production traffic. Internal configuration is not part of this paper and is not
 required to reproduce any number reported here, all of which are measurements of
 externally observable behaviour.
 
@@ -268,11 +268,22 @@ ContextualJudgeBench & judging between near-tied candidates, 8 splits & 2,000 pa
 \end{table}
 
 All three are third-party public benchmarks. We do not redistribute their contents; the
-protocols are theirs and are followed verbatim. ProfBench is the one that matches the
-question this paper asks: its tasks are expert-level, they have no single correct answer,
-and each is scored criterion by criterion against an official rubric --- the combination a
-collaborative system should either pass or fail visibly, rather than a benchmark where
-surface fluency is enough.
+protocols are theirs and are followed verbatim.
+
+They were chosen to span the regime a collaborative system is designed for. ProfBench is
+the target case: expert-level tasks with no single correct answer, scored criterion by
+criterion against an official rubric, where an answer that merely reads convincingly does
+not score. ContextualJudgeBench is the boundary case: its splits are deliberately built so
+that the two candidates are near-tied, which is where a confidence signal should be
+expected to run out. JudgeBench is the control: its pairs have objectively determinable
+answers, so it is the benchmark on which a collaborative system should \emph{not} expect an
+advantage --- and it is reported here as a tie.
+
+The ProfBench task count is the benchmark's own, not a subsample of our choosing. Its
+official release contains 40 tasks; we scored every task for which all systems produced an
+answer, which is 38, and the two remaining tasks were excluded and disclosed rather than
+imputed. The judgment benchmarks are likewise used in full --- 620 pairs and 2{,}000 pairs
+from their official releases.
 
 \subsubsection{4.2 Protocols and aggregation}\label{protocols}
 
@@ -306,8 +317,8 @@ the same protocol, with the same judging pipeline, and all reported margins are
 accompanied by the counts they are computed from.
 
 The single-model baseline throughout is \textbf{DeepSeek V4 Flash, called directly}
-through its official API with no coordination: no second opinion, no cross-examination
-and no arbitration. Requests are sent under the model name \texttt{deepseek-v4-flash};
+through its official API as a single direct call, with none of the coordination the
+collaborative systems apply. Requests are sent under the model name \texttt{deepseek-v4-flash};
 the provider documents that this name is now served by DeepSeek-V4.1-Flash and billed at
 the Flash price. Because the benchmarks in this paper were run on different dates,
 different runs may have been served by different versions behind the same name. We label

@@ -291,10 +291,13 @@ accompanied by the counts they are computed from.
 
 The single-model baseline throughout is \textbf{DeepSeek V4 Flash, called directly}
 through its official API with no coordination: no second opinion, no cross-examination
-and no arbitration. The confidence-elicitation run in Section~5.3 uses the same
-endpoint and, since it is executed later, may be served by a later build of that
-endpoint than the original runs; this is recorded as a limitation rather than
-corrected.
+and no arbitration. Requests are sent under the model name \texttt{deepseek-v4-flash};
+the provider documents that this name is now served by DeepSeek-V4.1-Flash and billed at
+the Flash price. Because the benchmarks in this paper were run on different dates,
+different runs may have been served by different versions behind the same name. We label
+every run by the name we called, report the confidence-elicitation run's raw accuracy
+alongside its confidence so that drift is visible, and record the version question as a
+limitation rather than assuming it away.
 
 \subsection{5 RQ1: Is Cross-Model Confidence Calibrated?}\label{rq1}
 

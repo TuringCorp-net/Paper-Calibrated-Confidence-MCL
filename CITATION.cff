@@ -5,6 +5,7 @@ authors:
   - family-names: Zhang
     given-names: Li
 year: 2026
+version: "1.0"
 url: "https://github.com/TuringCorp-net/Paper-Calibrated-Confidence-MCL"
 preferred-citation:
   type: article

@@ -4,7 +4,7 @@
 
 Preprint (work in progress). Author: Li Zhang. Affiliation: TuringCorp.
 
-> **Status: draft v0.7.** The section structure, the evaluation protocol and all
+> **Status: 1.0 (2026-09-13).** The section structure, the evaluation protocol and all
 > measured results are in place, including the single-model confidence comparison of
 > Section 5.3 (same items, same protocol, one model instead of the collaborative judge).
 

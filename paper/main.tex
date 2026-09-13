@@ -56,49 +56,29 @@
 
 \subsection{Abstract}\label{abstract}
 
-A single model answers a question and, if asked, reports a confidence about its own
-answer. That signal is introspective: nothing outside the model checks it, and a model
-that is wrong can be wrong with high stated confidence. This paper studies an
-alternative produced by the Meta-Coordination Layer (MCL) framework, in which several
-heterogeneous models generate and cross-examine independently and an arbitration step
-selects among the resulting candidates, emitting a confidence value with every
-decision.
+A single model answers a question and, asked, reports a confidence about its own answer.
+That signal is introspective: nothing outside the model checks it, and a wrong answer can
+be a confident one. We study an alternative from the Meta-Coordination Layer (MCL)
+framework, in which heterogeneous models generate and cross-examine independently and an
+arbitration step selects among the candidates, emitting a confidence with every decision.
+We evaluate its two deployed instantiations --- a collaborative generator and a
+collaborative judge --- on two public judgment benchmarks (JudgeBench, 614 judgments;
+ContextualJudgeBench, 1{,}991 pairs) and an expert-level rubric benchmark (ProfBench, 38
+tasks).
 
-We evaluate the framework through its two deployed instantiations --- a collaborative
-generator and a collaborative judge --- on three benchmark families: two public
-judgment benchmarks (JudgeBench, 614 scored judgments; ContextualJudgeBench, the full
-official 8-split set, 1,991 scored pairs / 3,988 response orders) and an expert-level,
-multi-domain rubric benchmark (ProfBench, 38 scored tasks). We ask whether cross-model
-confidence is calibrated against outcomes; how much accuracy a confidence threshold
-buys at what coverage; where the signal degrades; whether the decision is invariant to
-presentation order, unlike a single model used as a judge; and whether
-preference-based judgment separates systems differently from rubric scoring.
+The collaborative judge's accuracy ties with DeepSeek V4 Flash called directly (92.5\% vs
+92.2\%; CJB 67.1\% vs 65.4\%), yet its confidence is monotone across four bands (99.6 /
+94.0 / 84.1 / 67.7\% on JudgeBench) and supports selective judgment: gating at 80\%
+confidence retains 76.1\% of judgments at 97.4\% accuracy. Asked for its own confidence
+under the same protocol, the single model spends it at the top of the scale --- 51.8\% of
+its CJB judgments are made at $\geq$ 90\% confidence and 428 of them are wrong --- and
+separates right from wrong by 3.8 points against 6.5. On ProfBench the collaborative
+system scores 63.3 against 57.4 and 55.6, is preferred 36 times out of 38 in a rubric-blind
+comparison, and keeps 36 of 37 picks when the candidates exchange positions.
 
-On the public judgment benchmarks the collaborative judge's raw accuracy ties with
-DeepSeek V4 Flash called directly (JudgeBench 92.5\% vs 92.7\%; CJB 67.1\%
-vs 65.4\%), while its confidence is monotone in outcome accuracy across four bands
-(JudgeBench 99.6\% / 94.0\% / 84.1\% / 67.7\%; CJB 83.3\% / 76.4\% / 63.6\% / 55.4\%).
-Applying a threshold turns this into selective judgment: on JudgeBench, gating at
-80\% confidence retains 76.1\% of judgments at 97.4\% accuracy, and at 90\% retains
-46.1\% at 99.6\%. Asked for its own confidence under the same protocol and guidance, the
-single model spends that confidence differently: it makes 51.8\% of its CJB judgments at
-$\geq$ 90\% confidence and is wrong on 428 of them --- about one in five --- while the gap
-between its mean confidence when right and when wrong is 3.8 points, against 6.5 for the
-collaborative judge. On the rubric benchmark, the collaborative system scores 63.3
-against 57.4 for DeepSeek V4 Flash called directly and 55.6 for the official o3 draft on the
-same 38 tasks under one judging pipeline; in a rubric-blind side-by-side comparison the
-collaborative draft was selected in 36 of 38 tasks, and on all 37 tasks where the judge had
-made a pick, exchanging the two candidates between the option positions left 36 unchanged
---- the single change falling on a task the judge had itself flagged as a near-tie.
-
-The paper's central negative result is that the usefulness of the confidence signal is
-conditional on how verifiable the underlying judgment is. On CJB splits where the
-correct judgment is checkable, gating at 70\% confidence retains 93.6\% of decisions at
-83.0\% accuracy; on splits whose two candidates are deliberately near-tied, the same
-threshold retains 79.8\% at 62.6\% and the separation between correct and incorrect
-decisions nearly vanishes. We report calibration, order-invariance, the single-model
-comparison and instrument effects together with the comparisons in which the
-collaborative system does not come out ahead.
+The signal's usefulness is conditional on how verifiable the judgment is: on deliberately
+near-tied CJB splits the same gate buys almost nothing. We report these limits alongside the
+comparisons in which the collaborative system does not come out ahead.
 
 \subsection{Keywords}\label{keywords}
 

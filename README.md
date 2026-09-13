@@ -55,8 +55,8 @@ redistribute their contents.
 - **ProfBench** — 40 expert-level tasks, ten each in Physics PhD, Chemistry PhD,
   Finance MBA and Consulting MBA, scored criterion by criterion against an official
   rubric. NVIDIA. <https://huggingface.co/datasets/nvidia/ProfBench>
-- **JudgeBench** — 620 judgment pairs drawn from MMLU-Pro, LiveBench (Reasoning, Math)
-  and LiveCodeBench.
+- **JudgeBench** — 620 judgment pairs across knowledge, reasoning, mathematics and code
+  items.
 - **ContextualJudgeBench (CJB)** — Salesforce; full official set of 2,000 pairs across
   all 8 splits.
 
@@ -67,14 +67,14 @@ exclusions disclosed. Per-criterion and per-band tables are added under `data/` 
 paper is written.
 
 - **Judgment accuracy.** JudgeBench 92.5% (568/614) against 92.7% for a direct
-  single-model baseline on the same judged set — the raw pick rate ties. CJB 67.1%
+  direct call to DeepSeek V4 Flash on the same judged set — the raw pick rate ties. CJB 67.1%
   (1,336/1,991 pairs, consistent accuracy, random floor 25%) against 65.4% for the
   baseline on the same judged set.
 - **Calibration.** JudgeBench confidence bands (share of judgments, observed accuracy):
   ≥90% — 45.6%, 99.6%; 80–90% — 29.7%, 94.0%; 70–80% — 13.2%, 84.1%; <70% — 10.5%,
   67.7%. CJB bands: 83.3% / 76.4% / 63.6% / 55.4%.
 - **Generation.** ProfBench, same judging pipeline, same 38 tasks: collaborative 63.3,
-  direct baseline 57.4, official o3 draft 55.6. Judge calibration against official
+  DeepSeek V4 Flash called directly 57.4, official o3 draft 55.6. Judge calibration against official
   per-criterion labels: 74.0% agreement, F1 0.761.
 - **Order invariance.** Swapping the two candidates between the two option positions
   on a 10-task sample kept the same pick in 10 of 10 cases.
@@ -95,8 +95,7 @@ comparisons in which the collaborative system does not come out ahead.
 ## Related preprints
 
 - MCL conceptual framework — <https://doi.org/10.6084/m9.figshare.30645869>
-- MCL-Team: Minimal Multi-Model Collaboration Surpasses Single Models on LiveBench and
-  IFEval — <https://doi.org/10.6084/m9.figshare.32824352>
+- MCL-Team: minimal multi-model collaboration — <https://doi.org/10.6084/m9.figshare.32824352>
 - Exploring Execution-Form Boundaries in Brain–Cerebellum Collaboration —
   <https://doi.org/10.6084/m9.figshare.33413569>
 

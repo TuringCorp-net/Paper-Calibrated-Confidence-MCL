@@ -73,14 +73,14 @@ buys at what coverage; where the signal degrades; whether the decision is invari
 presentation order, unlike a single model used as a judge; and whether
 preference-based judgment separates systems differently from rubric scoring.
 
-On the public judgment benchmarks the collaborative judge's raw accuracy ties with a
-single-model baseline of the same generation (JudgeBench 92.5\% vs 92.7\%; CJB 67.1\%
+On the public judgment benchmarks the collaborative judge's raw accuracy ties with
+DeepSeek V4 Flash called directly (JudgeBench 92.5\% vs 92.7\%; CJB 67.1\%
 vs 65.4\%), while its confidence is monotone in outcome accuracy across four bands
 (JudgeBench 99.6\% / 94.0\% / 84.1\% / 67.7\%; CJB 83.3\% / 76.4\% / 63.6\% / 55.4\%).
 Applying a threshold turns this into selective judgment: on JudgeBench, gating at
 80\% confidence retains 76.1\% of judgments at 97.4\% accuracy, and at 90\% retains
 46.1\% at 99.6\%. On the rubric benchmark, the collaborative system scores 63.3
-against 57.4 for the direct baseline and 55.6 for the official reference draft on the
+against 57.4 for DeepSeek V4 Flash called directly and 55.6 for the official o3 draft on the
 same 38 tasks under one judging pipeline; in a rubric-blind side-by-side comparison the
 collaborative draft was selected in 36 of 38 tasks, and exchanging the two candidates
 between the option positions kept the same pick in 10 of 10 cases.
@@ -289,6 +289,13 @@ Every comparison in this paper is between systems evaluated on the same items, u
 the same protocol, with the same judging pipeline, and all reported margins are
 accompanied by the counts they are computed from.
 
+The single-model baseline throughout is \textbf{DeepSeek V4 Flash, called directly}
+through its official API with no coordination: no second opinion, no cross-examination
+and no arbitration. The confidence-elicitation run in Section~5.3 uses the same
+endpoint and, since it is executed later, may be served by a later build of that
+endpoint than the original runs; this is recorded as a limitation rather than
+corrected.
+
 \subsection{5 RQ1: Is Cross-Model Confidence Calibrated?}\label{rq1}
 
 \subsubsection{5.1 Confidence bands against outcomes}\label{bands}
@@ -386,8 +393,9 @@ be settled by inspection at all.
   The collaborative judge, re-run with the two candidates exchanged between the option
   positions, kept the same pick in 10 of 10 sampled tasks.
 \item
-  A single model used as a judge over 76 head-to-head comparisons picked the candidate
-  in the second position at a rate 7.9 points higher than the candidate in the first.
+  A single model used as a judge --- DeepSeek V4 Flash, over 76 head-to-head
+  comparisons --- picked the candidate in the second position at a rate 7.9 points
+  higher than the candidate in the first.
 \end{itemize}
 
 The contrast is the point: the collaborative decision is stable under an intervention
@@ -398,11 +406,11 @@ that measurably moves a single-model judge.
 \subsubsection{8.1 Two measurements of the same comparison}\label{two-measurements}
 
 On ProfBench, scored criterion by criterion on the same 38 tasks by the same pipeline,
-the collaborative generator scores 63.3 against 57.4 for the direct baseline and 55.6
-for the official reference draft. In a separate comparison the same tasks were put to
-the collaborative judge as a rubric-blind preference question --- the task and two
-drafts, no rubric, no scores --- and the collaborative draft was chosen in 36 of 38
-tasks, at a median confidence of 85.9\%.
+the collaborative generator scores 63.3 against 57.4 for DeepSeek V4 Flash called
+directly and 55.6 for the official o3 reference draft. In a separate comparison the
+same tasks were put to the collaborative judge as a rubric-blind preference question
+--- the task and two drafts, no rubric, no scores --- and the collaborative draft was
+chosen in 36 of 38 tasks, at a median confidence of 85.9\%.
 
 \subsubsection{8.2 Instrument hierarchy and its limits}\label{instrument-limits}
 
@@ -436,7 +444,7 @@ the instruments disagree in a structured way.}
 \tightlist
 \item
   \textbf{Accuracy parity is a result here, not a caveat.} On JudgeBench the
-  collaborative judge's raw accuracy ties with a single-model baseline. The paper's
+  collaborative judge's raw accuracy ties with DeepSeek V4 Flash called directly. The paper's
   claim is about the uncertainty axis, not about the pick rate.
 \item
   \textbf{Every preference measurement in this paper was produced by one of the systems
@@ -460,15 +468,17 @@ the instruments disagree in a structured way.}
   is stated as an open question and the abstract reports only measured values.
 \item
   \textbf{Model versions drift.} Benchmarks were run at different times against hosted
-  endpoints; the baseline re-run for H4 will use a later version of the same endpoint
-  than the original runs. This is disclosed rather than corrected.
+  endpoints. The baseline is DeepSeek V4 Flash throughout; the confidence-elicitation
+  run of Section~5.3 executes later than the original runs and may therefore be served
+  by a later build of the same endpoint, and the raw accuracy of that run is reported
+  alongside its confidence so that any drift is visible rather than assumed away.
 \end{enumerate}
 
 \subsection{10 Conclusion}\label{conclusion}
 
 A collaborative system's most useful output may not be a better answer but a calibrated
 statement about how much the answer should be trusted. On two public judgment
-benchmarks the collaborative judge's accuracy ties with a single-model baseline while
+benchmarks the collaborative judge's accuracy ties with DeepSeek V4 Flash called directly while
 its confidence is monotone in outcome accuracy and supports a quantified
 risk--coverage trade-off; on an expert rubric benchmark the collaborative generator
 leads by a few points under rubric scoring and is preferred almost unanimously under a
@@ -505,14 +515,13 @@ published.
 \item
   Salesforce. \emph{ContextualJudgeBench.} 2026.
 \item
-  JudgeBench. \emph{Judging between candidate answers across MMLU-Pro, LiveBench and
-  LiveCodeBench.} 2026.
+  JudgeBench. \emph{Judging between candidate answers across knowledge, reasoning,
+  mathematics and code items.} 2026.
 \item
   Zhang, L. \emph{MCL conceptual framework.} Preprint, 2026.
   \url{https://doi.org/10.6084/m9.figshare.30645869}
 \item
-  Zhang, L. \emph{MCL-Team: Minimal Multi-Model Collaboration Surpasses Single Models
-  on LiveBench and IFEval.} Preprint, 2026.
+  Zhang, L. \emph{MCL-Team: minimal multi-model collaboration.} Preprint, 2026.
   \url{https://doi.org/10.6084/m9.figshare.32824352}
 \end{thebibliography}
 
